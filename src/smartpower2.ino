@@ -49,6 +49,12 @@ WiFiClient logClient;
 #define MEASUREWATTHOUR		'm'
 #define FW_VERSION			'f'
 
+// new states ENABLED and DISABLED MEASUREMENTS
+#define ENABLED 'A'
+#define DISABLED 'B'
+char STATE = ENABLED;
+// ----
+
 #define FWversion	1.4
 
 uint8_t onoff = OFF;
@@ -750,7 +756,13 @@ void send_data_to_clients(String str, uint8_t page, uint8_t num)
 
 void handler(void)
 {
-    // change the output in the serial port
+    // simple addon to read terminal and make action based on it
+    int in_state = 0; // expects char A (0x41) (dec 65) or char B (0x42)(dec 66)
+    in_state = Serial.read();
+    if (in_state == 65) STATE = ENABLED;
+    if (in_state == 66) STATE = DISABLED;
+    // ----
+
     if (onoff == ON) {
         digitalWrite(POWERLED, D1state = !D1state);
         readPower();
@@ -767,10 +779,17 @@ void handler(void)
         for (unsigned int i = 0; i < (6-us_len); i++) {
             numZeros += "0";
         }
-        
-        // new message with timestamp
-        String data_serial = diffsec + "." + numZeros + diffusec +
-            + " " + String(watt, 4) + "\r\n";
+
+        // new message with timestamp        
+        String data_serial;
+        if (STATE == ENABLED) {
+            data_serial = diffsec + "." + numZeros + diffusec +
+                + " " + String(watt, 4) + "\r\n";
+        } else {
+            data_serial = diffsec + "." + numZeros + diffusec +
+                + " 0.0000 \r\n";
+        }
+        // ---
 
         // original msg
         // String data_serial = String(volt, 3) + "," + String(ampere, 3) + "," +
