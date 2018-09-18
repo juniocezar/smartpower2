@@ -10,6 +10,14 @@
 #include <mcp4652.h>
 #include <LiquidCrystal_I2C.h>
 
+//junio
+#include <inttypes.h>
+#include <math.h>
+#include <time.h>
+#include <sys/time.h>
+
+//
+
 #define CONSOLE_PORT 23
 
 WiFiServer logServer(CONSOLE_PORT);
@@ -124,7 +132,7 @@ void setup() {
 
     webserver_init();
 
-    timerId = timer.setInterval(1000, handler);
+    timerId = timer.setInterval(1, handler);
 
     // Log
     logServer.begin();
@@ -735,11 +743,13 @@ void send_data_to_clients(String str, uint8_t page, uint8_t num)
 
 void handler(void)
 {
+    // change the output in the serial port
     if (onoff == ON) {
         digitalWrite(POWERLED, D1state = !D1state);
         readPower();
+
         String data_serial = String(volt, 3) + "," + String(ampere, 3) + "," +
-                             String(watt, 3) + "," + String(watth / 3600, 3) + "\r\n";
+                            String(watt, 3) + "," + String(watth / 3600, 3) + "\r\n";        
 
         Serial.print(data_serial.c_str());
     }
