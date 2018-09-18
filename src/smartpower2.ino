@@ -89,6 +89,10 @@ struct client_sp2 {
 
 struct client_sp2 client_sp2[5];
 
+// Time structure to log timestamps alongside watt values
+struct timeval start, end;
+
+
 void setup() {
     USE_SERIAL.begin(115200);
     USE_SERIAL.setDebugOutput(true);
@@ -100,6 +104,9 @@ void setup() {
 
     pinMode(BTN_ONOFF, INPUT);
     attachInterrupt(digitalPinToInterrupt(BTN_ONOFF), pinChanged, CHANGE);
+
+    // getting baseline timestamp for logging
+    gettimeofday(&start, NULL);
 
     for (uint8_t t = 4; t > 0; t--) {
         USE_SERIAL.printf("[SETUP] BOOT WAIT %d...\n\r", t);
@@ -748,8 +755,18 @@ void handler(void)
         digitalWrite(POWERLED, D1state = !D1state);
         readPower();
 
-        String data_serial = String(volt, 3) + "," + String(ampere, 3) + "," +
-                            String(watt, 3) + "," + String(watth / 3600, 3) + "\r\n";        
+        // getting current timestamp and difference
+        gettimeofday(&end, NULL);
+        const double timestamp = ((end.tv_sec * 1000000 + end.tv_usec)
+                - (start.tv_sec * 1000000 + start.tv_usec)) / 1000000.0;
+
+        
+        // new message with timestamp
+        String data_serial = String(timestamp, 5) + " " + String(watt, 3) + "\r\n";
+
+        // original msg
+        // String data_serial = String(volt, 3) + "," + String(ampere, 3) + "," +
+        //                   String(watt, 3) + "," + String(watth / 3600, 3) + "\r\n";        
 
         Serial.print(data_serial.c_str());
     }
