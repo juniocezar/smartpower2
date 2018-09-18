@@ -757,12 +757,20 @@ void handler(void)
 
         // getting current timestamp and difference
         gettimeofday(&end, NULL);
-        const double timestamp = ((end.tv_sec * 1000000 + end.tv_usec)
-                - (start.tv_sec * 1000000 + start.tv_usec)) / 1000000.0;
+        
+        String diffsec  = String(end.tv_sec - start.tv_sec);
+        String diffusec = String(end.tv_usec - start.tv_usec);
 
+        unsigned int us_len = diffusec.length();
+        String numZeros = String("");
+
+        for (unsigned int i = 0; i < (6-us_len); i++) {
+            numZeros += "0";
+        }
         
         // new message with timestamp
-        String data_serial = String(timestamp, 5) + " " + String(watt, 3) + "\r\n";
+        String data_serial = diffsec + "." + numZeros + diffusec +
+            + " " + String(watt, 4) + "\r\n";
 
         // original msg
         // String data_serial = String(volt, 3) + "," + String(ampere, 3) + "," +
