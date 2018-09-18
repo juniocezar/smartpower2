@@ -31,3 +31,17 @@ Timer:
 
 
  timerId = timer.setInterval(1000, handler);
+
+
+
+Reference:
+
+https://wiki.odroid.com/accessory/power_supply_battery/smartpower2#receving_power_data_via_microusb_cable
+
+https://forum.odroid.com/viewtopic.php?f=86&t=25428
+
+http://www.ti.com/lit/ds/symlink/ina231.pdf
+
+https://forum.odroid.com/viewtopic.php?f=86&t=31395&sid=f5b1581d302d2d70643e362fb55622bb
+
+https://forum.odroid.com/viewtopic.php?f=86&t=28883&sid=f5b1581d302d2d70643e362fb55622bb (similar usage)
