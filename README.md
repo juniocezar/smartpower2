@@ -1,4 +1,5 @@
 Linux
+
 1. Install PlatformIO
 ```
 sudo apt-get install python-pip

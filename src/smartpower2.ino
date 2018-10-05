@@ -10,13 +10,12 @@
 #include <mcp4652.h>
 #include <LiquidCrystal_I2C.h>
 
-//junio
+// #### Junio: Including extra headers
 #include <inttypes.h>
 #include <math.h>
 #include <time.h>
 #include <sys/time.h>
-
-//
+// ####
 
 #define CONSOLE_PORT 23
 
@@ -756,46 +755,29 @@ void send_data_to_clients(String str, uint8_t page, uint8_t num)
 
 void handler(void)
 {
-    // simple addon to read terminal and make action based on it
+    /* #### Junio: Handling information sent through the serial connnection.
+       Our Java/C Library sends data through serial connection to manipulate the 
+       measurement state */
+
     int in_state = 0; // expects char A (0x41) (dec 65) or char B (0x42)(dec 66)
     in_state = Serial.read();
     if (in_state == 65) STATE = ENABLED;
-    if (in_state == 66) STATE = DISABLED;
-    // ----
+    else if (in_state == 66) STATE = DISABLED;
+    else if (in_state == 67) logClient.write("START\n");
+    else if (in_state == 68) logClient.write("FINISH\n");
+    
 
     if (onoff == ON) {
         digitalWrite(POWERLED, D1state = !D1state);
         readPower();
 
-        // getting current timestamp and difference
-        gettimeofday(&end, NULL);
-        
-        String diffsec  = String(end.tv_sec - start.tv_sec);
-        String diffusec = String(end.tv_usec - start.tv_usec);
-
-        unsigned int us_len = diffusec.length();
-        String numZeros = String("");
-
-        for (unsigned int i = 0; i < (6-us_len); i++) {
-            numZeros += "0";
-        }
-
-        // new message with timestamp        
-        String data_serial;
-        if (STATE == ENABLED) {
-            data_serial = diffsec + "." + numZeros + diffusec +
-                + " " + String(watt, 4) + "\r\n";
-        } else {
-            data_serial = diffsec + "." + numZeros + diffusec +
-                + " 0.0000 \r\n";
-        }
-        // ---
+        // Junio: Disabling the output through the serial port
 
         // original msg
         // String data_serial = String(volt, 3) + "," + String(ampere, 3) + "," +
         //                   String(watt, 3) + "," + String(watth / 3600, 3) + "\r\n";        
 
-        Serial.print(data_serial.c_str());
+        //Serial.print(data_serial.c_str());
     }
 
     if (connectedLCD) {
@@ -830,16 +812,37 @@ void handler(void)
 
     if (logClient && logClient.connected())
     {
-        // Report the log info
-        String data = String(volt, 3) + "," + String(ampere, 3) + "," +
-                      String(watt, 3) + "," + String(watth / 3600, 3) + "\r\n";
 
+        // getting current timestamp
+        gettimeofday(&end, NULL);
+        
+        // creating strings for each part of the timestamp (seconds and micros)
+        String diffsec  = String(end.tv_sec - start.tv_sec);
+        String diffusec = String(end.tv_usec - start.tv_usec);
+
+        // defining the amount of zeros we are going to add to the left of the micro
+        // seconds notation: Format: SECONDS.ZerosMicroseconds
+        unsigned int us_len = diffusec.length();
+        String numZeros = String("");
+        for (unsigned int i = 0; i < (6-us_len); i++) {
+            numZeros += "0";
+        }
+
+        // new message with timestamp        
+        String data = "LOG: ";
+        if (STATE == ENABLED) {
+            data += diffsec + "." + numZeros + diffusec +
+                + " " + String(watt, 8) + "\r\n";
+        } else {
+            data += diffsec + "." + numZeros + diffusec +
+                + " 0.0000 \r\n";
+        }
         logClient.write(data.c_str());
 
-        while (logClient.available())
-        {
-            logClient.read();
-        }
+        // while (logClient.available())
+        // {
+        //     logClient.read();
+        // }
     }
 
     lcd_status();
